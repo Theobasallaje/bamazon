@@ -60,11 +60,11 @@ function showOptions() {
         });
 }
 
-function getStock(id) {
+function getStock(id, cb) {
     connection.query('SELECT * FROM products', function (err, result) {
         var stock = result[id-1].stock_quantity;
-        return stock;
-    })
+        cb(stock);
+    });
 }
 
 function viewProducts() {
@@ -117,33 +117,37 @@ function addInventory(stock) {
             }
         ])
         .then(function (answer) {
-            var newStock = answer.quantity + (getStock(answer.id)); 
-            console.log(answer.id);
-            console.log(newStock);
-            console.log(stock);
-            var query = `UPDATE products SET stock_quantity = ${newStock} WHERE item_id = ${answer.id}`;
-            connection.query(query, function (err, result) {
-                if (err) {
-                    console.log("There was a problem!");
+           getStock(answer.id, function(stock) {
+                var newStock = stock + parseInt(answer.quantity);
+
+                console.log(answer.id);
+                console.log(newStock);
+                console.log(stock);
+                var query = `UPDATE products SET stock_quantity = ${newStock} WHERE item_id = ${answer.id}`;
+                connection.query(query, function (err, result) {
+                    if (err) {
+                        console.log("There was a problem!");
+                        showOptions();
+                        throw err;
+                    } else {
+                        //log order successful
+                        console.log("Success!");
+                        console.log("Updated Information for the item you added:");
+                        connection.query('SELECT * FROM products WHERE item_id =' + answer.id, function (err, result) {
+                            if (err) {
+                                throw err;
+                            }
+        
+                            console.table(result);
+                            connection.end();
+                        })
+                        // console.table(result);
+                        // console.log(result);
+                    }
                     showOptions();
-                    throw err;
-                } else {
-                    //log order successful
-                    console.log("Success!");
-                    console.log("Updated Information for the item you added:");
-                    connection.query('SELECT * FROM products WHERE item_id =' + answer.id, function (err, result) {
-                        if (err) {
-                            throw err;
-                        }
-    
-                        console.table(result);
-                        connection.end();
-                    })
-                    // console.table(result);
-                    // console.log(result);
-                }
-                showOptions();
-            });
+                });
+            }); 
+
         });
 }
 
