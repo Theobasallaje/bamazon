@@ -10,4 +10,6 @@
 
 # In both of the above cases you will need to run the application again if you wish to order another item.
 
+# NOTE: You will need to run the sql scripts in mysql workbench for this to work.
+
 # Thanks!
